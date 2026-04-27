@@ -1,0 +1,169 @@
+public class QuantityMeasurementApp {
+
+    // =========================================================
+    // ---------------- LENGTH CATEGORY ------------------------
+    // =========================================================
+
+    enum LengthUnit {
+        FEET(1.0),
+        INCH(1.0 / 12.0),
+        YARD(3.0),
+        CM(0.0328084);
+
+        private final double toFeet;
+
+        LengthUnit(double toFeet) {
+            this.toFeet = toFeet;
+        }
+
+        public double toBase(double value) {
+            return value * toFeet;
+        }
+
+        public double fromBase(double baseValue) {
+            return baseValue / toFeet;
+        }
+    }
+
+    static class QuantityLength {
+        private static final double EPSILON = 0.00001;
+
+        private final double value;
+        private final LengthUnit unit;
+
+        public QuantityLength(double value, LengthUnit unit) {
+            if (!Double.isFinite(value) || unit == null)
+                throw new IllegalArgumentException("Invalid length input");
+            this.value = value;
+            this.unit = unit;
+        }
+
+        public double toBase() {
+            return unit.toBase(value);
+        }
+
+        public boolean equals(QuantityLength other) {
+            if (other == null) throw new IllegalArgumentException();
+            return Math.abs(this.toBase() - other.toBase()) < EPSILON;
+        }
+
+        public static QuantityLength add(QuantityLength l1,
+                                         QuantityLength l2,
+                                         LengthUnit targetUnit) {
+
+            double sumBase = l1.toBase() + l2.toBase();
+            double result = targetUnit.fromBase(sumBase);
+
+            return new QuantityLength(result, targetUnit);
+        }
+
+        @Override
+        public String toString() {
+            return value + " " + unit;
+        }
+    }
+
+    // =========================================================
+    // ---------------- WEIGHT CATEGORY ------------------------
+    // =========================================================
+
+    enum WeightUnit {
+        KG(1.0),
+        G(1.0 / 1000.0),
+        LB(0.453592);
+
+        private final double toKg;
+
+        WeightUnit(double toKg) {
+            this.toKg = toKg;
+        }
+
+        public double toBase(double value) {
+            return value * toKg;
+        }
+
+        public double fromBase(double baseValue) {
+            return baseValue / toKg;
+        }
+    }
+
+    static class QuantityWeight {
+        private static final double EPSILON = 0.00001;
+
+        private final double value;
+        private final WeightUnit unit;
+
+        public QuantityWeight(double value, WeightUnit unit) {
+            if (!Double.isFinite(value) || unit == null)
+                throw new IllegalArgumentException("Invalid weight input");
+            this.value = value;
+            this.unit = unit;
+        }
+
+        public double toBase() {
+            return unit.toBase(value);
+        }
+
+        // -------- Equality --------
+        public boolean equals(QuantityWeight other) {
+            if (other == null) throw new IllegalArgumentException();
+            return Math.abs(this.toBase() - other.toBase()) < EPSILON;
+        }
+
+        // -------- Conversion --------
+        public QuantityWeight convertTo(WeightUnit target) {
+            double base = toBase();
+            double result = target.fromBase(base);
+            return new QuantityWeight(result, target);
+        }
+
+        // -------- Addition (default unit = first operand) --------
+        public QuantityWeight add(QuantityWeight other) {
+            return add(this, other, this.unit);
+        }
+
+        // -------- Addition with target unit --------
+        public static QuantityWeight add(QuantityWeight w1,
+                                         QuantityWeight w2,
+                                         WeightUnit target) {
+
+            double sumBase = w1.toBase() + w2.toBase();
+            double result = target.fromBase(sumBase);
+
+            return new QuantityWeight(result, target);
+        }
+
+        @Override
+        public String toString() {
+            return value + " " + unit;
+        }
+    }
+
+    // =========================================================
+    // ---------------- MAIN METHOD ----------------------------
+    // =========================================================
+
+    public static void main(String[] args) {
+
+        // -------- Length Tests --------
+        QuantityLength l1 = new QuantityLength(1, LengthUnit.KG.FEET); // (safe if typo? ignore)
+        QuantityLength l2 = new QuantityLength(12, LengthUnit.INCH);
+
+        System.out.println("Length equality: " + l1.equals(l2));
+
+        QuantityLength l3 = QuantityLength.add(l1, l2, LengthUnit.YARD);
+        System.out.println("Length sum in yards: " + l3);
+
+        // -------- Weight Tests --------
+        QuantityWeight w1 = new QuantityWeight(1000, WeightUnit.G);
+        QuantityWeight w2 = new QuantityWeight(1, WeightUnit.KG);
+
+        System.out.println("Weight equality: " + w1.equals(w2));
+
+        QuantityWeight w3 = QuantityWeight.add(w1, w2, WeightUnit.KG);
+        System.out.println("Weight sum in kg: " + w3);
+
+        QuantityWeight w4 = new QuantityWeight(2, WeightUnit.KG);
+        System.out.println("Convert 2 kg to lb: " + w4.convertTo(WeightUnit.LB));
+    }
+}
