@@ -1,0 +1,75 @@
+public class QuantityMeasurementApp {
+
+    // -------- Enum for Units --------
+    enum Unit {
+        FEET(1.0),
+        INCH(1.0 / 12.0); // 1 inch = 1/12 feet
+
+        private final double toFeetFactor;
+
+        Unit(double toFeetFactor) {
+            this.toFeetFactor = toFeetFactor;
+        }
+
+        public double toFeet(double value) {
+            return value * toFeetFactor;
+        }
+    }
+
+    // -------- Generic QuantityLength Class --------
+    static class QuantityLength {
+        private static final double EPSILON = 0.00001;
+
+        private final Double value;
+        private final Unit unit;
+
+        public QuantityLength(Double value, Unit unit) {
+            validate(value, unit);
+            this.value = value;
+            this.unit = unit;
+        }
+
+        private void validate(Double value, Unit unit) {
+            if (value == null) {
+                throw new IllegalArgumentException("Value must not be null");
+            }
+            if (value.isNaN() || value.isInfinite()) {
+                throw new IllegalArgumentException("Invalid numeric value");
+            }
+            if (unit == null) {
+                throw new IllegalArgumentException("Unit must not be null");
+            }
+        }
+
+        // Convert to base unit (Feet)
+        public double toFeet() {
+            return unit.toFeet(value);
+        }
+
+        // Equality check
+        public boolean equals(QuantityLength other) {
+            if (other == null) {
+                throw new IllegalArgumentException("Other quantity must not be null");
+            }
+            return Math.abs(this.toFeet() - other.toFeet()) < EPSILON;
+        }
+    }
+
+    // -------- Main Method --------
+    public static void main(String[] args) {
+
+        // Hardcoded inputs
+        QuantityLength length1 = new QuantityLength(1.0, Unit.FEET);
+        QuantityLength length2 = new QuantityLength(12.0, Unit.INCH);
+
+        QuantityLength length3 = new QuantityLength(5.0, Unit.FEET);
+        QuantityLength length4 = new QuantityLength(60.0, Unit.INCH);
+
+        // Comparisons
+        boolean result1 = length1.equals(length2);
+        boolean result2 = length3.equals(length4);
+
+        System.out.println("1 foot == 12 inches: " + result1);
+        System.out.println("5 feet == 60 inches: " + result2);
+    }
+}
