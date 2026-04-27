@@ -1,0 +1,98 @@
+public class QuantityMeasurementApp {
+
+    // -------- Enum for Units --------
+    enum Unit {
+        FEET(1.0),
+        INCH(1.0 / 12.0),          // 1 inch = 1/12 feet
+        YARD(3.0),                 // 1 yard = 3 feet
+        CM(0.0328084);             // 1 cm = 0.0328084 feet
+
+        private final double toFeetFactor;
+
+        Unit(double toFeetFactor) {
+            this.toFeetFactor = toFeetFactor;
+        }
+
+        public double toFeet(double value) {
+            return value * toFeetFactor;
+        }
+
+        public double fromFeet(double feetValue) {
+            return feetValue / toFeetFactor;
+        }
+    }
+
+    // -------- QuantityLength Class --------
+    static class QuantityLength {
+        private static final double EPSILON = 0.00001;
+
+        private final Double value;
+        private final Unit unit;
+
+        public QuantityLength(Double value, Unit unit) {
+            validate(value, unit);
+            this.value = value;
+            this.unit = unit;
+        }
+
+        private void validate(Double value, Unit unit) {
+            if (value == null || !Double.isFinite(value)) {
+                throw new IllegalArgumentException("Invalid numeric value");
+            }
+            if (unit == null) {
+                throw new IllegalArgumentException("Unit must not be null");
+            }
+        }
+
+        // Convert current object to another unit
+        public double convertTo(Unit targetUnit) {
+            if (targetUnit == null) {
+                throw new IllegalArgumentException("Target unit must not be null");
+            }
+
+            double valueInFeet = unit.toFeet(value);
+            return targetUnit.fromFeet(valueInFeet);
+        }
+
+        // Static conversion method (as per UC5 requirement)
+        public static double convert(Double value, Unit sourceUnit, Unit targetUnit) {
+            if (value == null || !Double.isFinite(value)) {
+                throw new IllegalArgumentException("Invalid numeric value");
+            }
+            if (sourceUnit == null || targetUnit == null) {
+                throw new IllegalArgumentException("Units must not be null");
+            }
+
+            double valueInFeet = sourceUnit.toFeet(value);
+            return targetUnit.fromFeet(valueInFeet);
+        }
+
+        // Equality check (retained from UC4)
+        public boolean equals(QuantityLength other) {
+            if (other == null) {
+                throw new IllegalArgumentException("Other must not be null");
+            }
+            return Math.abs(this.unit.toFeet(this.value) - 
+                            other.unit.toFeet(other.value)) < EPSILON;
+        }
+    }
+
+    // -------- Main Method --------
+    public static void main(String[] args) {
+
+        // Static conversion examples
+        double feetToInch = QuantityLength.convert(1.0, Unit.FEET, Unit.INCH);
+        double yardToInch = QuantityLength.convert(1.0, Unit.YARD, Unit.INCH);
+        double cmToFeet = QuantityLength.convert(30.48, Unit.CM, Unit.FEET);
+
+        // Instance conversion examples
+        QuantityLength length = new QuantityLength(2.0, Unit.FEET);
+        double feetToCm = length.convertTo(Unit.CM);
+
+        // Output
+        System.out.println("1 ft in inches: " + feetToInch);
+        System.out.println("1 yard in inches: " + yardToInch);
+        System.out.println("30.48 cm in feet: " + cmToFeet);
+        System.out.println("2 ft in cm: " + feetToCm);
+    }
+}
