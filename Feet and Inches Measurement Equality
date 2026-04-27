@@ -1,0 +1,72 @@
+public class QuantityMeasurementApp {
+
+    // -------- Feet Class --------
+    static class Feet {
+        private static final double EPSILON = 0.00001;
+
+        public boolean areEqual(Double value1, Double value2) {
+            validate(value1, value2);
+            return Math.abs(value1 - value2) < EPSILON;
+        }
+
+        private void validate(Double value1, Double value2) {
+            if (value1 == null || value2 == null) {
+                throw new IllegalArgumentException("Feet values must not be null");
+            }
+            if (value1.isNaN() || value2.isNaN() ||
+                value1.isInfinite() || value2.isInfinite()) {
+                throw new IllegalArgumentException("Invalid feet values");
+            }
+        }
+    }
+
+    // -------- Inches Class --------
+    static class Inches {
+        private static final double EPSILON = 0.00001;
+
+        public boolean areEqual(Double value1, Double value2) {
+            validate(value1, value2);
+            return Math.abs(value1 - value2) < EPSILON;
+        }
+
+        private void validate(Double value1, Double value2) {
+            if (value1 == null || value2 == null) {
+                throw new IllegalArgumentException("Inches values must not be null");
+            }
+            if (value1.isNaN() || value2.isNaN() ||
+                value1.isInfinite() || value2.isInfinite()) {
+                throw new IllegalArgumentException("Invalid inches values");
+            }
+        }
+    }
+
+    // -------- Static Methods --------
+    public static boolean compareFeet(Double v1, Double v2) {
+        Feet feet = new Feet();
+        return feet.areEqual(v1, v2);
+    }
+
+    public static boolean compareInches(Double v1, Double v2) {
+        Inches inches = new Inches();
+        return inches.areEqual(v1, v2);
+    }
+
+    // -------- Main Method --------
+    public static void main(String[] args) {
+
+        // Hardcoded values
+        Double feet1 = 5.0;
+        Double feet2 = 5.0000001;
+
+        Double inches1 = 12.0;
+        Double inches2 = 12.0;
+
+        // Compare Feet
+        boolean feetResult = compareFeet(feet1, feet2);
+        System.out.println("Feet Equality: " + feetResult);
+
+        // Compare Inches
+        boolean inchesResult = compareInches(inches1, inches2);
+        System.out.println("Inches Equality: " + inchesResult);
+    }
+}
