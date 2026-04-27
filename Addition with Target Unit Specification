@@ -1,0 +1,119 @@
+public class QuantityMeasurementApp {
+
+    // -------- Enum for Units --------
+    enum Unit {
+        FEET(1.0),
+        INCH(1.0 / 12.0),
+        YARD(3.0),
+        CM(0.0328084);
+
+        private final double toFeetFactor;
+
+        Unit(double toFeetFactor) {
+            this.toFeetFactor = toFeetFactor;
+        }
+
+        public double toFeet(double value) {
+            return value * toFeetFactor;
+        }
+
+        public double fromFeet(double feetValue) {
+            return feetValue / toFeetFactor;
+        }
+    }
+
+    // -------- QuantityLength Class --------
+    static class QuantityLength {
+        private static final double EPSILON = 0.00001;
+
+        private final Double value;
+        private final Unit unit;
+
+        public QuantityLength(Double value, Unit unit) {
+            validate(value, unit);
+            this.value = value;
+            this.unit = unit;
+        }
+
+        private void validate(Double value, Unit unit) {
+            if (value == null || !Double.isFinite(value)) {
+                throw new IllegalArgumentException("Invalid numeric value");
+            }
+            if (unit == null) {
+                throw new IllegalArgumentException("Unit must not be null");
+            }
+        }
+
+        // -------- Conversion --------
+        public double convertTo(Unit targetUnit) {
+            if (targetUnit == null) {
+                throw new IllegalArgumentException("Target unit must not be null");
+            }
+            double feetValue = unit.toFeet(value);
+            return targetUnit.fromFeet(feetValue);
+        }
+
+        // -------- Equality --------
+        public boolean equals(QuantityLength other) {
+            if (other == null) {
+                throw new IllegalArgumentException("Other must not be null");
+            }
+            return Math.abs(this.unit.toFeet(this.value) -
+                            other.unit.toFeet(other.value)) < EPSILON;
+        }
+
+        // -------- UC6: Add (default unit = first operand) --------
+        public QuantityLength add(QuantityLength other) {
+            return add(this, other, this.unit);
+        }
+
+        // -------- UC7: Add with Target Unit --------
+        public static QuantityLength add(QuantityLength l1,
+                                         QuantityLength l2,
+                                         Unit targetUnit) {
+
+            if (l1 == null || l2 == null) {
+                throw new IllegalArgumentException("Inputs must not be null");
+            }
+            if (targetUnit == null) {
+                throw new IllegalArgumentException("Target unit must not be null");
+            }
+
+            // Convert both to base (feet)
+            double l1Feet = l1.unit.toFeet(l1.value);
+            double l2Feet = l2.unit.toFeet(l2.value);
+
+            // Add
+            double sumFeet = l1Feet + l2Feet;
+
+            // Convert to target unit
+            double resultValue = targetUnit.fromFeet(sumFeet);
+
+            return new QuantityLength(resultValue, targetUnit);
+        }
+
+        @Override
+        public String toString() {
+            return value + " " + unit;
+        }
+    }
+
+    // -------- Main Method --------
+    public static void main(String[] args) {
+
+        QuantityLength l1 = new QuantityLength(1.0, Unit.FEET);
+        QuantityLength l2 = new QuantityLength(12.0, Unit.INCH);
+
+        // UC6 behavior
+        QuantityLength result1 = l1.add(l2);
+
+        // UC7 behavior (explicit target unit)
+        QuantityLength result2 = QuantityLength.add(l1, l2, Unit.YARD);
+
+        QuantityLength result3 = QuantityLength.add(l1, l2, Unit.CM);
+
+        System.out.println("Default (feet): " + result1);
+        System.out.println("In yards: " + result2);
+        System.out.println("In cm: " + result3);
+    }
+}
